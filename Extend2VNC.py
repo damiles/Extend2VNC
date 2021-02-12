@@ -3,7 +3,9 @@
 
 __author__ = 'fco'
 import Extend2VNC_UI
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtGui, QtCore, uic, QtWidgets
+from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtCore import *
 
 class EVUI(Extend2VNC_UI.Ui_MainWindow):
     def __init__(self):
@@ -18,7 +20,7 @@ class EVUI(Extend2VNC_UI.Ui_MainWindow):
         self.resolution_comboBox.currentIndexChanged.connect(self.comboboxChangefunc)
 
         self.actionMain_help.triggered.connect(self.helpfunc)
-        self.actionAbout_Qt.triggered.connect(QtGui.qApp.aboutQt)
+        #self.actionAbout_Qt.triggered.connect(QtGui.qApp.aboutQt)
         self.actionAbout_Extend2VNC.triggered.connect(self.Aboutfunc)
 
     def closeEvent(self, event):
@@ -28,7 +30,7 @@ class EVUI(Extend2VNC_UI.Ui_MainWindow):
     def startfunc(self):
         if (self.start == False):
             self.start_pushButton.setText('Stop')
-            resolutionList = ['640 480 60','800 480 60','1024 600 60','1024 768 60', '1366 768 60']
+            resolutionList = ['640 480 60','800 480 60','1024 600 60','1024 768 60', '1280 800 60', '1366 768 60']
             i = self.resolution_comboBox.currentIndex()
             if (i <= 4):
                 resolution = resolutionList[i]
@@ -69,17 +71,17 @@ class EVUI(Extend2VNC_UI.Ui_MainWindow):
 
     def Aboutfunc(self):
 
-        QtGui.QMessageBox.about(QtGui.QMainWindow(), "About Extend2VNC",
+        QtWidgets.QMessageBox.about(QMainWindow(), "About Extend2VNC",
                 "<b>Extend2VNC v0.1</b> in short, can extend the screen of your monitor wirelessly; in many words, is an application to Extend your screen using a virtual video interface and vncserver in Linux. Licence GPL v2."
                 "<br><br><b>Extend2VNC v0.1</b> en pocas palabras, permite extender la pantalla de su monitor inalámbricamente; en muchas palabras, es una aplicación para extender su pantalla usando una interfaz de video virtual y vncserver en Linux. Licencia GPL v2."
                 "<br><br>Programer: Francisco Perdigón Romero. (<b>bosito7</b>)"
                 "<br>Email: <a href=\"mailto:bosito7gmail.com?subject=About Extend2VNC\">bosito7@gmail.com</a>"
                 "<br><br>GUTL. Grupo de usuarios de tecnologias libres."
-                "<br> <a href=\"http://gutl.jovenclub.cu/\">http://gutl.jovenclub.cu/</a> ".decode("utf8"))
+                "<br> <a href=\"http://gutl.jovenclub.cu/\">http://gutl.jovenclub.cu/</a> ")
 
     def helpfunc(self):
 
-        QtGui.QMessageBox.about(QtGui.QMainWindow(), "About Extend2VNC",
+        QtWidgets.QMessageBox.about(QMainWindow(), "About Extend2VNC",
                 "<b>(English) Extend2VNC v0.1</b> in short, can extend the screen of your monitor wirelessly; in many words, is an application to Extend your screen using a virtual video interface and vncserver in Linux."
                 "<br>Dependencies: x11vnc, if your system is based on Debian or Ubuntu put in a terminal <b> sudo apt-get install x11vnc </b>"
                 "<br><br>Select the appropriate resolution for display on your device, there appears, select Custom and then specify it."
@@ -100,7 +102,7 @@ class EVUI(Extend2VNC_UI.Ui_MainWindow):
                 "<br>Para Linux use tightvnc para instalarlo, si su sistema es basado en Debian o Ubuntu poner en un terminal <b>sudo apt-get install xtightvncviewer</b>"
                 "<br>Luego en un terminal poner <b>vncviewer número_ip</b>"
                 "<br>Para Windows y MacOS use tightvnc descargelo del sitio oficial <a href=\"http://www.tightvnc.com/\">http://www.tightvnc.com/</a>"
-                "<br>Para Android descargar VNC Client Free del Play Store <a href=\"https://play.google.com/store/apps/details?id=com.evolve.androidVNC\">https://play.google.com/store/apps/details?id=com.evolve.androidVNC</a>".decode("utf8") )
+                "<br>Para Android descargar VNC Client Free del Play Store <a href=\"https://play.google.com/store/apps/details?id=com.evolve.androidVNC\">https://play.google.com/store/apps/details?id=com.evolve.androidVNC</a>" )
 
 
 
@@ -108,19 +110,19 @@ class utils:
     @staticmethod
     def generateVirtualScreen(resolution):
         """This funtion create an virtual screen"""
-        import commands
+        import subprocess
 
         # Obtain courrent output screen
         command = 'xrandr'
-        commandOut= commands.getstatusoutput(command)
+        commandOut= subprocess.getstatusoutput(command)
         currentScreen  = commandOut[1].split(' connected')[0].split('\n')[-1]
 
-        virtualScreen = 'VIRTUAL1'
+        virtualScreen = 'VGA-0'
 
         # gtf 1024 600 60
         command = 'gtf ' + resolution
         print(command)
-        commandOut = commands.getstatusoutput(command)
+        commandOut = subprocess.getstatusoutput(command)
 
         Modeline = commandOut[1].split('Modeline ')[1].split('\n')[0]
         ModelineName = Modeline.split(' ')[0]
@@ -128,33 +130,37 @@ class utils:
         # xrandr --newmode "1024x600_60.00"  48.96  1024 1064 1168 1312  600 601 604 622  -HSync +Vsync
         command = 'xrandr --newmode '+ Modeline
         print(command)
-        commands.getoutput(command)
+        subprocess.getoutput(command)
 
         # xrandr --addmode VirtualScreen "1024x600_60.00"
         command = 'xrandr --addmode ' + virtualScreen + ' ' + ModelineName
         print(command)
-        commands.getoutput(command)
+        subprocess.getoutput(command)
 
         # xrandr --output VirtualScreen --mode "1024x600_60.00" --left-of VGA1
         command = 'xrandr --output ' + virtualScreen + ' --mode ' + ModelineName + ' --left-of ' + currentScreen
         #command = 'xrandr --output ' + virtualScreen + ' --mode ' + ModelineName + ' --right-of ' + currentScreen
+        #command = 'xrandr --output ' + virtualScreen + ' --mode ' + ModelineName + ' --pos 100x100 '
+        print("****************************************************")
         print(command)
-        commands.getoutput(command)
+        print("****************************************************")
+        subprocess.getoutput(command)
 
     @staticmethod
     def closeVirtualScreen():
         """This funtion close an virtual screen"""
-        import commands
+        import subprocess
 
         # xrandr --output VirtualScreen --off
-        command = 'xrandr --output VIRTUAL1 --off'
+        #command = 'xrandr --output VIRTUAL1 --off'
+        command = 'xrandr --output VGA-0 --off'
         print(command)
-        commands.getoutput(command)
+        subprocess.getoutput(command)
 
     @staticmethod
     def vncStart(resolution):
         """This funtion start vncserver"""
-        import commands , subprocess
+        import subprocess
         # x11vnc -clip 1024x600+0+0 -viewonly
         res = resolution.split(' ')
         command = ['/usr/bin/x11vnc', '-clip' ,res[0] + 'x' + res[1] + '+0+0', '-viewonly', '-forever']
@@ -166,7 +172,7 @@ class utils:
     @staticmethod
     def obtainIP():
         """This funtion return the IP number"""
-        import commands
+        import subprocess
 
         # Obtain courrent output screen
         # command = '/sbin/ifconfig'
@@ -176,18 +182,18 @@ class utils:
         
         command = '/bin/ip addr | grep "inet " | head -n 1 | tail -n 1'
        
-        commandOut= commands.getstatusoutput(command)
+        commandOut= subprocess.getstatusoutput(command)
         print(commandOut[1])
         # nIP = commandOut[1].split('inet:')[1].split(' ')[0]
         nIP = commandOut[1].strip().split(' ')[1].split('/')[0]
         if(nIP == '127.0.0.1'):
             command = '/bin/ip addr | grep "inet " | head -n 2 | tail -n 1'
-            commandOut= commands.getstatusoutput(command)
+            commandOut= subprocess.getstatusoutput(command)
             nIP = commandOut[1].strip().split(' ')[1].split('/')[0]
         print("ip: "+nIP)
         return nIP
 
-class MyMainWindow(QtGui.QMainWindow):
+class MyMainWindow(QMainWindow):
     def __init__(self):
         super(MyMainWindow, self).__init__()
 
@@ -196,7 +202,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
 if __name__ == "__main__":
        import sys
-       app = QtGui.QApplication(sys.argv)
+       app = QApplication(sys.argv)
        MainWindow = MyMainWindow()
        ui = EVUI()
        ui.setupUi(MainWindow)

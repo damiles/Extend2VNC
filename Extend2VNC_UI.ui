@@ -109,6 +109,11 @@
         </item>
         <item>
          <property name="text">
+          <string>1280x800</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Custom</string>
          </property>
         </item>
